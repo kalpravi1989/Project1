@@ -3,11 +3,13 @@ package com.revature.Services;
 import com.revature.DAOs.ReimbursementDAO;
 import com.revature.DAOs.UserDAO;
 import com.revature.models.DTOs.IncomingReimbursementDTO;
+import com.revature.models.DTOs.OutgoingReimbManager;
 import com.revature.models.Reimbursement;
 import com.revature.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +23,13 @@ public class ReimbursementService {
         this.rDAO=rDAO;
         this.uDAO=uDAO;
     }
-    public List<Reimbursement> getAllReimbursement(){
-        return rDAO.findAll();
+    public List<OutgoingReimbManager> getAllReimbursement(){
+        List<Reimbursement> allReimb=rDAO.findAll();
+        List<OutgoingReimbManager> outReimb=new ArrayList<>();
+        for(Reimbursement reimb:allReimb){
+            outReimb.add(new OutgoingReimbManager(reimb.getReimbId(),reimb.getDescription(),reimb.getAmount(),reimb.getStatus(),reimb.getUser().getUserName()));
+        }
+        return outReimb;
     }
     public Reimbursement getAllReimbursementByReimbId(int reimbId){
         Reimbursement r=rDAO.findById(reimbId).orElseThrow(()->
@@ -36,19 +43,35 @@ public class ReimbursementService {
                 new IllegalArgumentException("No user found with id: "+userId));
         return rDAO.findByUser_UserId(userId);
     }
-    public List<Reimbursement>getAllReimbBystatus(String status){
-       return  rDAO.findBystatus(status);
+    public List<OutgoingReimbManager>getAllReimbBystatus(String status){
+        List<Reimbursement> allReimb=rDAO.findBystatus(status);
+        List<OutgoingReimbManager> outReimb=new ArrayList<>();
+        for(Reimbursement reimb:allReimb){
+            outReimb.add(new OutgoingReimbManager(reimb.getReimbId(),reimb.getDescription(),reimb.getAmount(),reimb.getStatus(),reimb.getUser().getUserName()));
+        }
+        return outReimb;
+
     }
-    public List<Reimbursement>getAllReimbByStatusAndUserId(String status,int userId){
+    public List<OutgoingReimbManager>getAllReimbByStatusAndUserId(String status,int userId){
         User u=uDAO.findById(userId).orElseThrow(()->
                 new IllegalArgumentException("No user found with id: "+userId));
-        return rDAO.findBystatusAndUser_UserId(status,userId);
+        List<Reimbursement>  allReimb= rDAO.findBystatusAndUser_UserId(status,userId);
+        List<OutgoingReimbManager> outReimb=new ArrayList<>();
+        for(Reimbursement reimb:allReimb){
+            outReimb.add(new OutgoingReimbManager(reimb.getReimbId(),reimb.getDescription(),reimb.getAmount(),reimb.getStatus(),reimb.getUser().getUserName()));
+        }
+        return outReimb;
+
     }
-    public Reimbursement addReimbursement(IncomingReimbursementDTO rDTO){
-     Reimbursement newReimbursement=new Reimbursement(0,rDTO.getDescription(),rDTO.getAmount(),"Pending",null, rDTO.getReason(),null);
-        Optional<User> u=uDAO.findById(rDTO.getUserId());
+    public Reimbursement addReimbursement(IncomingReimbursementDTO rDTO,int userId){
+
+        if(rDTO.getDescription().isBlank()||rDTO.getAmount()<=0||rDTO.getReason().isBlank()){
+           throw new IllegalArgumentException("Enter vaild details");
+        }
+        Reimbursement newReimbursement=new Reimbursement(0,rDTO.getDescription(),rDTO.getAmount(),"Pending",null, rDTO.getReason(),null);
+        Optional<User> u=uDAO.findById(userId);
         if(u.isEmpty()){
-            throw new IllegalArgumentException("No user with id: "+rDTO.getUserId());
+            throw new IllegalArgumentException("No user with id: "+userId);
         }else{
             newReimbursement.setUser(u.get());
             return rDAO.save(newReimbursement);
@@ -61,6 +84,15 @@ public class ReimbursementService {
 
         System.out.println(r);
         r.setStatus(status);
+        return rDAO.save(r);
+    }
+    public Reimbursement updateDescrptionById(int reimbId,String describtion ){
+        Reimbursement r=rDAO.findById(reimbId).orElseThrow(()->
+                new IllegalArgumentException("No reimbId with id: "+reimbId));
+
+
+        System.out.println(r);
+        r.setDescription(describtion);
         return rDAO.save(r);
     }
 

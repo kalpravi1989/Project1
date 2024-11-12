@@ -6,16 +6,16 @@ public class IncomingReimbursementDTO {
     String description;
     int amount;
     String reason;
-    int userId;
+
 
     public IncomingReimbursementDTO() {
     }
 
-    public IncomingReimbursementDTO(String description, int amount, String reason, int userId) {
+    public IncomingReimbursementDTO(String description, int amount, String reason) {
         this.description = description;
         this.amount = amount;
         this.reason = reason;
-        this.userId = userId;
+
     }
 
     public String getDescription() {
@@ -44,13 +44,8 @@ public class IncomingReimbursementDTO {
         this.reason = reason;
     }
 
-    public int getUserId() {
-        return userId;
-    }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+
 
     @Override
     public String toString() {
@@ -58,7 +53,7 @@ public class IncomingReimbursementDTO {
                 "description='" + description + '\'' +
                 ", amount=" + amount +
                 ", reason='" + reason + '\'' +
-                ", userId=" + userId +
+
                 '}';
     }
 }

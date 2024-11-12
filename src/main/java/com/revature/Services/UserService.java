@@ -1,10 +1,13 @@
 package com.revature.Services;
 
 import com.revature.DAOs.UserDAO;
+import com.revature.models.DTOs.UserDTO;
+import com.revature.models.DTOs.UserRegisterDTO;
 import com.revature.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,20 +20,37 @@ public class UserService {
         this.uDAO=uDAO;
     }
 
-
-    public List<User> getAllUser(){
-        return uDAO.findAll();
+   //Method to get all User
+    public List<UserDTO> getAllUser(){
+        List<User> allUsers=new ArrayList<>();
+        List<UserDTO> allUserstoSend=new ArrayList<>();
+        allUsers=uDAO.findAll();
+        for(User u:allUsers){
+            allUserstoSend.add(new UserDTO(u.getUserId(),u.getUserName(),u.getFirstName(),u.getLastName(),u.getRole()));
+        }
+        return allUserstoSend;
     }
 
-    public User registerUser(User user){
-        return uDAO.save(user);
-
+    //mathod to create user
+    public UserDTO registerUser(UserRegisterDTO newuser){
+        if(newuser.getUserName().isBlank()||newuser.getFirstName().isBlank()){
+            throw new IllegalArgumentException("Enter vaild details");
+        }
+        else{
+        User u=new User(0, newuser.getFirstName(), newuser.getLastName(), newuser.getUserName(), newuser.getPassword(), "User");
+        User newU= uDAO.save(u);
+         UserDTO newOutUser=new UserDTO(newU.getUserId(),newU.getUserName(), newU.getFirstName(), newU.getLastName(),newU.getRole());
+         return newOutUser;
+       }
     }
-    public Optional<User> getuserById(int userId){
+    //Method to get user details by user_id
+    public UserDTO getuserById(int userId){
         User u=uDAO.findById(userId).orElseThrow(()->
                 new IllegalArgumentException("No user found with id: "+userId));
-        return uDAO.findById(userId);
+        UserDTO usertoSend=new UserDTO(u.getUserId(),u.getUserName(),u.getFirstName(),u.getLastName(),u.getRole());
+        return usertoSend;
     }
+    //method to delete user by user_id
     public String deleteUserById(int userId){
         User u=uDAO.findById(userId).orElseThrow(()->
                 new IllegalArgumentException("No user found with id: "+userId));
@@ -42,5 +62,7 @@ public class UserService {
             return "not deleted";
         }
     }
+
+
 
 }
